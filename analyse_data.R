@@ -184,8 +184,35 @@ ggplot(cepagri_2016, aes(x = temp, y = umid, colour = sensa)) +
   ggtitle("Sensação térmica em relação a Umidade e Temperatura") +
   scale_colour_gradientn(colours = terrain.colors(10))+
   geom_point(alpha = 0.1)
- 
 
+
+#Análise 5 - Estudo da probabilidade de instalação de fazendas eólicas
+# Atualmente, os governadores mundiais estão optando em investir fontes de energia renováveis (solar, eólica, biomassa..) em detrimento das que utilizam combustíveis fósseis.  
+# Portanto estudos são necessários para implementação das mesmas nas mais diversas áreas possíveis. Hoje no Brasil, o foco da instalação de fazendas eólicas 
+# se concentra no Nordeste (principalmente RN e BA) e na região Sul (SC). Um dos fatores predominentes é que a velocidade dos ventos deve manter em grande parte
+# acima dos 7m/s para que seja viável economicamente a instalação dos aerogeradores na regiã oestudada.
+
+vel <- sapply(cepagri$windSpeed,function(x){x/3.6})
+dfs_wind <- data.frame(vel)
+k_w <- ((sd(dfs_wind$vel)/mean(dfs_wind$vel)))^(-1.086)
+dfs_wind$value <- dweibull(vel, shape = k_w)
+
+k_wString <- as.character(round(k_w))
+
+stringLegend <- paste("k=",k_wString,sep=" ")
+
+plotWeibull <- ggplot(dfs_wind, aes(x = vel))
+plotWeibull <- plotWeibull + geom_line(aes(y = value, colour = stringLegend))
+plotWeibull <- plotWeibull + scale_x_continuous(name = "Speed (m/s)", limits = c(0, 5))
+plotWeibull <- plotWeibull + scale_y_continuous(name = "Prob")
+plotWeibull <- plotWeibull + labs (colour = "Legenda: ", title = "Curva de Weibull")
+print(plotWeibull)
+
+plotHisto <- ggplot(dfs_wind, aes(x=vel)) + geom_histogram(color="black", fill="white")
+plotHisto <- plotHisto + scale_x_continuous(name = "Speed (m/s)")
+plotHisto <- plotHisto + scale_y_continuous(name = "Frequency")
+plotHisto <- plotHisto + labs (title = "Histograma de ventos 2015-2019")
+print(plotHisto)
 
 
 
